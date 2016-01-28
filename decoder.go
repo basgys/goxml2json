@@ -5,6 +5,10 @@ import (
 	"io"
 )
 
+const (
+	attrPrefix = "-"
+)
+
 // A Decoder reads and decodes XML objects from an input stream.
 type Decoder struct {
 	r   io.Reader
@@ -50,8 +54,7 @@ func (dec *Decoder) Decode(root *Node) error {
 
 			// Extract attributes as children
 			for _, a := range se.Attr {
-				// TODO : Prefix attribute to avoid clashes
-				elem.n.AddChild(a.Name.Local, &Node{Data: a.Value})
+				elem.n.AddChild(attrPrefix+a.Name.Local, &Node{Data: a.Value})
 			}
 		case xml.CharData:
 			// Extract XML data (if any)
