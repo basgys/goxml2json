@@ -17,18 +17,24 @@ Go package that converts XML to JSON
   package main
 
   import (
-    "fmt"
-    
-    xj "github.com/basgys/xml2json"
+  	"fmt"
+  	"strings"
+
+  	xj "github.com/basgys/goxml2json"
   )
 
-  // xml is an io.Reader
-  json, err := Convert(xml)
-  if err != nil {
-    panic("That's embarrassing...")
+  func main() {
+  	// xml is an io.Reader
+  	xml := strings.NewReader(`<?xml version="1.0" encoding="UTF-8"?><hello>world</hello>`)
+  	json, err := xj.Convert(xml)
+  	if err != nil {
+  		panic("That's embarrassing...")
+  	}
+
+  	fmt.Println(json.String())
+  	// {"hello": "world"}
   }
 
-  fmt.Println(json.String())
 ```
 
 **Input**
@@ -58,3 +64,16 @@ Go package that converts XML to JSON
     }
   }
 ```
+
+### Disclaimer
+This project has been hacked in a few hours and is definitely not production ready.
+
+### Contributing
+Feel free to contribute to this project if you want to fix/extend/improve it.
+
+### TODO
+
+   * Extract data types in JSON (numbers, boolean, ...)
+   * Categorise errors
+   * Option to prettify the JSON output
+   * Benchmark
