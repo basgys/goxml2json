@@ -67,7 +67,7 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 	} else {
 		// TODO : Extract data type
 		enc.write("\"")
-		enc.write(escapeJsonString(n.Data))
+		enc.write(escapeJSONString(n.Data))
 		enc.write("\"")
 	}
 
@@ -78,6 +78,6 @@ func (enc *Encoder) write(s string) {
 	enc.w.Write([]byte(s))
 }
 
-func escapeJsonString(s string) string {
+func escapeJSONString(s string) string {
 	return strings.Replace(s, "\"", "\\\"", -1)
 }
