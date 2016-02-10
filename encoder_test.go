@@ -26,7 +26,8 @@ func TestEncode(t *testing.T) {
 		Misc: map[string]string{
 			"Nationality": "Swiss",
 			"City":        "Zürich",
-			"foo":         "\"quoted text\"",
+			"foo":         "",
+			"bar":         "\"quoted text\"",
 		},
 	}
 
