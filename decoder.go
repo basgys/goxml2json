@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	attrPrefix = "-"
+	// attrPrefix = "-"
+	attrPrefix = ""
 )
 
 // A Decoder reads and decodes XML objects from an input stream.
