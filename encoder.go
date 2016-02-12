@@ -27,6 +27,14 @@ func (enc *Encoder) Encode(root *Node) error {
 
 	enc.err = enc.format(root, 0)
 
+	// Terminate each value with a newline.
+	// This makes the output look a little nicer
+	// when debugging, and some kind of space
+	// is required if the encoded value was a number,
+	// so that the reader knows there aren't more
+	// digits coming.
+	enc.write("\n")
+
 	return enc.err
 }
 
