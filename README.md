@@ -72,6 +72,10 @@ This project has been hacked in a few hours and is definitely not production rea
 ### Contributing
 Feel free to contribute to this project if you want to fix/extend/improve it.
 
+### Contributors
+
+  - [DirectX](https://github.com/directx)
+
 ### TODO
 
    * Extract data types in JSON (numbers, boolean, ...)
