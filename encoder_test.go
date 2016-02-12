@@ -15,7 +15,7 @@ type bio struct {
 	Misc      map[string]string
 }
 
-// TestEncode ensures that encode outputs the expected JSON document
+// TestEncode ensures that encode outputs the expected JSON document.
 func TestEncode(t *testing.T) {
 	assert := assert.New(t)
 
@@ -27,6 +27,7 @@ func TestEncode(t *testing.T) {
 			"Nationality": "Swiss",
 			"City":        "Zürich",
 			"foo":         "",
+			"bar":         "\"quoted text\"",
 		},
 	}
 

@@ -1,6 +1,9 @@
 package xml2json
 
-import "io"
+import (
+	"io"
+	"strings"
+)
 
 // An Encoder writes JSON objects to an output stream.
 type Encoder struct {
@@ -64,7 +67,7 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 	} else {
 		// TODO : Extract data type
 		enc.write("\"")
-		enc.write(n.Data)
+		enc.write(escapeJSONString(n.Data))
 		enc.write("\"")
 	}
 
@@ -73,4 +76,8 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 
 func (enc *Encoder) write(s string) {
 	enc.w.Write([]byte(s))
+}
+
+func escapeJSONString(s string) string {
+	return strings.Replace(s, "\"", "\\\"", -1)
 }
