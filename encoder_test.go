@@ -28,6 +28,7 @@ func TestEncode(t *testing.T) {
 			"City":        "Zürich",
 			"foo":         "",
 			"bar":         "\"quoted text\"",
+			"esc":         "escaped \\ sanitized",
 		},
 	}
 

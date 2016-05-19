@@ -86,6 +86,8 @@ func (enc *Encoder) write(s string) {
 	enc.w.Write([]byte(s))
 }
 
+var escapeReplacer = strings.NewReplacer(`\`, `\\`, `"`, `\"`)
+
 func escapeJSONString(s string) string {
-	return strings.Replace(s, "\"", "\\\"", -1)
+	return escapeReplacer.Replace(s)
 }
