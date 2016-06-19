@@ -75,6 +75,7 @@ Feel free to contribute to this project if you want to fix/extend/improve it.
 ### Contributors
 
   - [DirectX](https://github.com/directx)
+  - [samuelhug](https://github.com/samuelhug)
 
 ### TODO
 
