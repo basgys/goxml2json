@@ -96,3 +96,35 @@ func TestConvert(t *testing.T) {
 	// Assertion
 	assert.JSONEq(string(expected), res.String(), "Drumroll")
 }
+
+
+func TestConvertWithNewLines(t *testing.T) {
+	assert := assert.New(t)
+
+	s := `<?xml version="1.0" encoding="UTF-8"?>
+  <osm>
+   <foo>
+	 	foo
+
+		bar
+	</foo>
+  </osm>`
+
+	// Build SimpleJSON
+	json, err := sj.NewJson([]byte(`{
+	  "osm": {
+	    "foo": "\n\t \tfoo\n\n\t\tbar\n\t"
+	  }
+	}`))
+	assert.NoError(err)
+
+	expected, err := json.MarshalJSON()
+	assert.NoError(err)
+
+	// Then encode it in JSON
+	res, err := Convert(strings.NewReader(s))
+	assert.NoError(err)
+
+	// Assertion
+	assert.JSONEq(string(expected), res.String(), "Drumroll")
+}
