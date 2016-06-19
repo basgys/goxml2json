@@ -1,4 +1,4 @@
-# goxml2json [![Build Status](https://drone.io/github.com/basgys/goxml2json/status.png)](https://drone.io/github.com/basgys/goxml2json/latest)
+# goxml2json
 
 Go package that converts XML to JSON
 
