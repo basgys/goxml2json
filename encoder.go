@@ -1,8 +1,8 @@
 package xml2json
 
 import (
-	"io"
 	"bytes"
+	"io"
 	"unicode/utf8"
 )
 
@@ -43,6 +43,16 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 	if n.IsComplex() {
 		enc.write("{")
 
+		// Add data as an additional attibute (if any)
+		if len(n.Data) > 0 {
+			enc.write("\"")
+			enc.write(contentPrefix)
+			enc.write("content")
+			enc.write("\": ")
+			enc.write(sanitiseString(n.Data))
+			enc.write(", ")
+		}
+
 		i := 0
 		tot := len(n.Children)
 		for label, children := range n.Children {
@@ -75,8 +85,7 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 		enc.write("}")
 	} else {
 		// TODO : Extract data type
-		e := stringEncoder{}
-		enc.write(e.escape(n.Data))
+		enc.write(sanitiseString(n.Data))
 	}
 
 	return nil
@@ -89,43 +98,41 @@ func (enc *Encoder) write(s string) {
 // https://golang.org/src/encoding/json/encode.go?s=5584:5627#L788
 var hex = "0123456789abcdef"
 
-type stringEncoder struct {
-		bytes.Buffer
-}
+func sanitiseString(s string) string {
+	var buf bytes.Buffer
 
-func (e *stringEncoder) escape(s string) string {
-	e.WriteByte('"')
-  start := 0
-  for i := 0; i < len(s); {
-  	if b := s[i]; b < utf8.RuneSelf {
+	buf.WriteByte('"')
+	start := 0
+	for i := 0; i < len(s); {
+		if b := s[i]; b < utf8.RuneSelf {
 			if 0x20 <= b && b != '\\' && b != '"' && b != '<' && b != '>' && b != '&' {
 				i++
 				continue
 			}
 			if start < i {
-				e.WriteString(s[start:i])
+				buf.WriteString(s[start:i])
 			}
 			switch b {
 			case '\\', '"':
-				e.WriteByte('\\')
-				e.WriteByte(b)
+				buf.WriteByte('\\')
+				buf.WriteByte(b)
 			case '\n':
-				e.WriteByte('\\')
-				e.WriteByte('n')
+				buf.WriteByte('\\')
+				buf.WriteByte('n')
 			case '\r':
-				e.WriteByte('\\')
-				e.WriteByte('r')
+				buf.WriteByte('\\')
+				buf.WriteByte('r')
 			case '\t':
-				e.WriteByte('\\')
-				e.WriteByte('t')
+				buf.WriteByte('\\')
+				buf.WriteByte('t')
 			default:
 				// This encodes bytes < 0x20 except for \n and \r,
 				// as well as <, > and &. The latter are escaped because they
 				// can lead to security holes when user-controlled strings
 				// are rendered into JSON and served to some browsers.
-				e.WriteString(`\u00`)
-				e.WriteByte(hex[b>>4])
-				e.WriteByte(hex[b&0xF])
+				buf.WriteString(`\u00`)
+				buf.WriteByte(hex[b>>4])
+				buf.WriteByte(hex[b&0xF])
 			}
 			i++
 			start = i
@@ -134,9 +141,9 @@ func (e *stringEncoder) escape(s string) string {
 		c, size := utf8.DecodeRuneInString(s[i:])
 		if c == utf8.RuneError && size == 1 {
 			if start < i {
-				e.WriteString(s[start:i])
+				buf.WriteString(s[start:i])
 			}
-			e.WriteString(`\ufffd`)
+			buf.WriteString(`\ufffd`)
 			i += size
 			start = i
 			continue
@@ -150,10 +157,10 @@ func (e *stringEncoder) escape(s string) string {
 		// See http://timelessrepo.com/json-isnt-a-javascript-subset for discussion.
 		if c == '\u2028' || c == '\u2029' {
 			if start < i {
-				e.WriteString(s[start:i])
+				buf.WriteString(s[start:i])
 			}
-			e.WriteString(`\u202`)
-			e.WriteByte(hex[c&0xF])
+			buf.WriteString(`\u202`)
+			buf.WriteByte(hex[c&0xF])
 			i += size
 			start = i
 			continue
@@ -161,8 +168,8 @@ func (e *stringEncoder) escape(s string) string {
 		i += size
 	}
 	if start < len(s) {
-		e.WriteString(s[start:])
+		buf.WriteString(s[start:])
 	}
-	e.WriteByte('"')
-	return e.String()
+	buf.WriteByte('"')
+	return buf.String()
 }

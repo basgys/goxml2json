@@ -23,6 +23,9 @@ func TestConvert(t *testing.T) {
     <tag k="traffic_sign" v="city_limit"/>
    </node>
    <foo>bar</foo>
+	 <mixed attr="attribute">
+	 	content
+	 </mixed>
   </osm>`
 
 	// Build SimpleJSON
@@ -81,7 +84,11 @@ func TestConvert(t *testing.T) {
 	        ]
 	      }
 	    ],
-	    "foo": "bar"
+	    "foo": "bar",
+			"mixed": {
+				"-attr": "attribute",
+				"#content": "content"
+			}
 	  }
 	}`))
 	assert.NoError(err)
@@ -96,7 +103,6 @@ func TestConvert(t *testing.T) {
 	// Assertion
 	assert.JSONEq(string(expected), res.String(), "Drumroll")
 }
-
 
 func TestConvertWithNewLines(t *testing.T) {
 	assert := assert.New(t)
@@ -113,7 +119,50 @@ func TestConvertWithNewLines(t *testing.T) {
 	// Build SimpleJSON
 	json, err := sj.NewJson([]byte(`{
 	  "osm": {
-	    "foo": "\n\t \tfoo\n\n\t\tbar\n\t"
+	    "foo": "foo\n\n\t\tbar"
+	  }
+	}`))
+	assert.NoError(err)
+
+	expected, err := json.MarshalJSON()
+	assert.NoError(err)
+
+	// Then encode it in JSON
+	res, err := Convert(strings.NewReader(s))
+	assert.NoError(err)
+
+	// Assertion
+	assert.JSONEq(string(expected), res.String(), "Drumroll")
+}
+
+func TestConvertWithMixedTags(t *testing.T) {
+	assert := assert.New(t)
+
+	s := `<?xml version="1.0" encoding="UTF-8"?>
+	<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+	    <soap-env:Header>
+	        <wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/12/secext">
+	            <wsse:BinarySecurityToken valueType="String" EncodingType="wsse:Base64Binary">
+	                Shared/IDL:IceSess\/SessMgr:1\.0.IDL/Common/!ICESMS\/ACPCRTC!ICESMSLB\/CRT.LB!-3379045898978075261!1563026!0
+	            </wsse:BinarySecurityToken>
+	        </wsse:Security>
+	    </soap-env:Header>
+	</soap-env:Envelope> `
+
+	// Build SimpleJSON
+	json, err := sj.NewJson([]byte(`{
+	  "Envelope": {
+	    "Header": {
+	      "Security": {
+	        "-wsse": "http://schemas.xmlsoap.org/ws/2002/12/secext",
+	        "BinarySecurityToken": {
+	          "#content": "Shared/IDL:IceSess\\/SessMgr:1\\.0.IDL/Common/!ICESMS\\/ACPCRTC!ICESMSLB\\/CRT.LB!-3379045898978075261!1563026!0",
+	          "-EncodingType": "wsse:Base64Binary",
+	          "-valueType": "String"
+	        }
+	      }
+	    },
+	    "-soap-env": "http://schemas.xmlsoap.org/soap/envelope/"
 	  }
 	}`))
 	assert.NoError(err)
