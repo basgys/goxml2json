@@ -58,7 +58,9 @@ func (dec *Decoder) Decode(root *Node) error {
 			}
 		case xml.CharData:
 			// Extract XML data (if any)
-			elem.n.Data = string(xml.CharData(se))
+			if len(elem.n.Data) == 0 || len(string(xml.CharData(se))) > len(elem.n.Data) {
+				elem.n.Data = string(xml.CharData(se))
+			}
 		case xml.EndElement:
 			// And add it to its parent list
 			if elem.parent != nil {
