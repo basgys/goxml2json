@@ -58,6 +58,11 @@ func (dec *Decoder) Decode(root *Node) error {
 			}
 		case xml.CharData:
 			// Extract XML data (if any)
+			// If the element have attributes, it should create a "{attrPref}data" property inside the object
+			if string(xml.CharData(se)) != "\n" && len(elem.n.Children) > 0 {
+				elem.n.AddChild(attrPrefix+"data", &Node{Data: string(xml.CharData(se))})
+			}
+			// Even so, set the data into Data
 			elem.n.Data = string(xml.CharData(se))
 		case xml.EndElement:
 			// And add it to its parent list
