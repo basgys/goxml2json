@@ -3,10 +3,12 @@ package xml2json
 import (
 	"encoding/xml"
 	"io"
+	"unicode"
 )
 
 const (
-	attrPrefix = "-"
+	attrPrefix    = "-"
+	contentPrefix = "#"
 )
 
 // A Decoder reads and decodes XML objects from an input stream.
@@ -58,7 +60,7 @@ func (dec *Decoder) Decode(root *Node) error {
 			}
 		case xml.CharData:
 			// Extract XML data (if any)
-			elem.n.Data = string(xml.CharData(se))
+			elem.n.Data = trimNonGraphic(string(xml.CharData(se)))
 		case xml.EndElement:
 			// And add it to its parent list
 			if elem.parent != nil {
@@ -71,4 +73,39 @@ func (dec *Decoder) Decode(root *Node) error {
 	}
 
 	return nil
+}
+
+// trimNonGraphic returns a slice of the string s, with all leading and trailing
+// non graphic characters and spaces removed.
+//
+// Graphic characters include letters, marks, numbers, punctuation, symbols,
+// and spaces, from categories L, M, N, P, S, Zs.
+// Spacing characters are set by category Z and property Pattern_White_Space.
+func trimNonGraphic(s string) string {
+	if s == "" {
+		return s
+	}
+
+	var first *int
+	var last int
+	for i, r := range s {
+		if !unicode.IsGraphic(r) || unicode.IsSpace(r) {
+			continue
+		}
+
+		if first == nil {
+			f := i // copy i
+			first = &f
+			last = i
+		} else {
+			last = i
+		}
+	}
+
+	// If first is nil, it means there are no graphic characters
+	if first == nil {
+		return ""
+	}
+
+	return s[*first : last+1]
 }

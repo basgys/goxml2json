@@ -28,3 +28,27 @@ func TestDecode(t *testing.T) {
 	err := NewDecoder(strings.NewReader(s)).Decode(root)
 	assert.NoError(err)
 }
+
+func TestTrim(t *testing.T) {
+	table := []struct {
+		in       string
+		expected string
+	}{
+		{in: "foo", expected: "foo"},
+		{in: " foo", expected: "foo"},
+		{in: "foo ", expected: "foo"},
+		{in: " foo ", expected: "foo"},
+		{in: "   foo   ", expected: "foo"},
+		{in: "foo bar", expected: "foo bar"},
+		{in: "\n\tfoo\n\t", expected: "foo"},
+		{in: "\n\tfoo\n\tbar\n\t", expected: "foo\n\tbar"},
+		{in: "", expected: ""},
+		{in: "\n", expected: ""},
+		{in: "\n\v", expected: ""},
+	}
+
+	for _, scenario := range table {
+		got := trimNonGraphic(scenario.in)
+		assert.Equal(t, scenario.expected, got)
+	}
+}
