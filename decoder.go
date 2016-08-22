@@ -88,7 +88,7 @@ func trimNonGraphic(s string) string {
 
 	var first *int
 	var last int
-	for i, r := range []rune(s) {
+	for i, r := range s {
 		if !unicode.IsGraphic(r) || unicode.IsSpace(r) {
 			continue
 		}
