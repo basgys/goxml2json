@@ -107,5 +107,5 @@ func trimNonGraphic(s string) string {
 		return ""
 	}
 
-	return s[*first : last+1]
+	return string([]rune(s)[*first : last+1])
 }
