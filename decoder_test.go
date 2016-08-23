@@ -46,6 +46,7 @@ func TestTrim(t *testing.T) {
 		{in: "\n", expected: ""},
 		{in: "\n\v", expected: ""},
 		{in: "ending with ä", expected: "ending with ä"},
+		{in: "ä and ä", expected: "ä and ä"},
 	}
 
 	for _, scenario := range table {
