@@ -66,9 +66,6 @@ Go package that converts XML to JSON
   }
 ```
 
-### Disclaimer
-This project has been hacked in a few hours and is definitely not production ready.
-
 ### Contributing
 Feel free to contribute to this project if you want to fix/extend/improve it.
 
