@@ -1,4 +1,4 @@
-# goxml2json
+# goxml2json [![CircleCI](https://circleci.com/gh/basgys/goxml2json.svg?style=svg)](https://circleci.com/gh/basgys/goxml2json)
 
 Go package that converts XML to JSON
 
