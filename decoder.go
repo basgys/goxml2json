@@ -9,8 +9,11 @@ import (
 )
 
 const (
-	attrPrefix    = "-"
 	contentPrefix = "#"
+)
+
+var (
+	attrPrefix = "-"
 )
 
 // A Decoder reads and decodes XML objects from an input stream.
@@ -23,6 +26,10 @@ type element struct {
 	parent *element
 	n      *Node
 	label  string
+}
+
+func SetAttributePrefix(prefix string) {
+	attrPrefix = prefix
 }
 
 // NewDecoder returns a new decoder that reads from r.
