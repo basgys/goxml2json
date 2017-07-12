@@ -15,14 +15,30 @@ const (
 
 // A Decoder reads and decodes XML objects from an input stream.
 type Decoder struct {
-	r   io.Reader
-	err error
+	r               io.Reader
+	err             error
+	attributePrefix string
+	contentPrefix   string
 }
 
 type element struct {
 	parent *element
 	n      *Node
 	label  string
+}
+
+func (dec *Decoder) SetAttributePrefix(prefix string) {
+	dec.attributePrefix = prefix
+}
+
+func (dec *Decoder) SetContentPrefix(prefix string) {
+	dec.contentPrefix = prefix
+}
+
+func (dec *Decoder) DecodeWithCustomPrefixes(root *Node, contentPrefix string, attributePrefix string) error {
+	dec.contentPrefix = contentPrefix
+	dec.attributePrefix = attributePrefix
+	return dec.Decode(root)
 }
 
 // NewDecoder returns a new decoder that reads from r.
@@ -33,6 +49,14 @@ func NewDecoder(r io.Reader) *Decoder {
 // Decode reads the next JSON-encoded value from its
 // input and stores it in the value pointed to by v.
 func (dec *Decoder) Decode(root *Node) error {
+
+	if dec.contentPrefix == "" {
+		dec.contentPrefix = contentPrefix
+	}
+	if dec.attributePrefix == "" {
+		dec.attributePrefix = attrPrefix
+	}
+
 	xmlDec := xml.NewDecoder(dec.r)
 
 	// That will convert the charset if the provided XML is non-UTF-8
@@ -61,7 +85,7 @@ func (dec *Decoder) Decode(root *Node) error {
 
 			// Extract attributes as children
 			for _, a := range se.Attr {
-				elem.n.AddChild(attrPrefix+a.Name.Local, &Node{Data: a.Value})
+				elem.n.AddChild(dec.attributePrefix+a.Name.Local, &Node{Data: a.Value})
 			}
 		case xml.CharData:
 			// Extract XML data (if any)

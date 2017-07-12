@@ -8,13 +8,29 @@ import (
 
 // An Encoder writes JSON objects to an output stream.
 type Encoder struct {
-	w   io.Writer
-	err error
+	w               io.Writer
+	err             error
+	contentPrefix   string
+	attributePrefix string
 }
 
 // NewEncoder returns a new encoder that writes to w.
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{w: w}
+}
+
+func (enc *Encoder) SetAttributePrefix(prefix string) {
+	enc.attributePrefix = prefix
+}
+
+func (enc *Encoder) SetContentPrefix(prefix string) {
+	enc.contentPrefix = prefix
+}
+
+func (enc *Encoder) EncodeWithCustomPrefixes(root *Node, contentPrefix string, attributePrefix string) error {
+	enc.contentPrefix = contentPrefix
+	enc.attributePrefix = attributePrefix
+	return enc.Encode(root)
 }
 
 // Encode writes the JSON encoding of v to the stream
@@ -24,6 +40,12 @@ func (enc *Encoder) Encode(root *Node) error {
 	}
 	if root == nil {
 		return nil
+	}
+	if enc.contentPrefix == "" {
+		enc.contentPrefix = contentPrefix
+	}
+	if enc.attributePrefix == "" {
+		enc.attributePrefix = attrPrefix
 	}
 
 	enc.err = enc.format(root, 0)
@@ -46,7 +68,7 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 		// Add data as an additional attibute (if any)
 		if len(n.Data) > 0 {
 			enc.write("\"")
-			enc.write(contentPrefix)
+			enc.write(enc.contentPrefix)
 			enc.write("content")
 			enc.write("\": ")
 			enc.write(sanitiseString(n.Data))

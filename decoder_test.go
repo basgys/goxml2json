@@ -25,8 +25,17 @@ func TestDecode(t *testing.T) {
 
 	// Decode XML document
 	root := &Node{}
-	err := NewDecoder(strings.NewReader(s)).Decode(root)
+	var err error
+	var dec *Decoder
+	dec = NewDecoder(strings.NewReader(s))
+	err = dec.Decode(root)
 	assert.NoError(err)
+
+	dec.SetAttributePrefix("test")
+	dec.SetContentPrefix("test2")
+	err = dec.DecodeWithCustomPrefixes(root, "test3", "test4")
+	assert.NoError(err)
+
 }
 
 func TestTrim(t *testing.T) {

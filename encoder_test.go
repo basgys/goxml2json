@@ -2,6 +2,7 @@ package xml2json
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	sj "github.com/bitly/go-simplejson"
@@ -17,6 +18,7 @@ type bio struct {
 
 // TestEncode ensures that encode outputs the expected JSON document.
 func TestEncode(t *testing.T) {
+	var err error
 	assert := assert.New(t)
 
 	author := bio{
@@ -24,11 +26,15 @@ func TestEncode(t *testing.T) {
 		Lastname:  "Gysler",
 		Hobbies:   []string{"DJ", "Running", "Tennis"},
 		Misc: map[string]string{
-			"Nationality": "Swiss",
-			"City":        "Zürich",
-			"foo":         "",
-			"bar":         "\"quoted text\"",
-			"esc":         "escaped \\ sanitized",
+			"lineSeparator": "\u2028",
+			"Nationality":   "Swiss",
+			"City":          "Zürich",
+			"foo":           "",
+			"bar":           "\"quoted text\"",
+			"esc":           "escaped \\ sanitized",
+			"r":             "\r return line",
+			"default":       "< >",
+			"runeError":     "\uFFFD",
 		},
 	}
 
@@ -54,13 +60,22 @@ func TestEncode(t *testing.T) {
 		})
 	}
 	root.AddChild("misc", misc)
+	var enc *Encoder
 
 	// Convert to JSON string
 	buf := new(bytes.Buffer)
-	err := NewEncoder(buf).Encode(root)
-	if err != nil {
-		assert.NoError(err)
-	}
+	enc = NewEncoder(buf)
+
+	err = enc.Encode(nil)
+	assert.NoError(err)
+
+	enc.SetAttributePrefix("test")
+	enc.SetContentPrefix("test2")
+	err = enc.EncodeWithCustomPrefixes(root, "test3", "test4")
+	assert.NoError(err)
+
+	err = enc.Encode(root)
+	assert.NoError(err)
 
 	// Build SimpleJSON
 	sj, err := sj.NewJson(buf.Bytes())
@@ -80,4 +95,7 @@ func TestEncode(t *testing.T) {
 	for k, v := range resMisc {
 		assert.Equal(author.Misc[k], v)
 	}
+
+	enc.err = fmt.Errorf("Testing if error provided is returned")
+	assert.Error(enc.Encode(nil))
 }
