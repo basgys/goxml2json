@@ -43,19 +43,16 @@ func (dec *Decoder) DecodeWithCustomPrefixes(root *Node, contentPrefix string, a
 
 // NewDecoder returns a new decoder that reads from r.
 func NewDecoder(r io.Reader) *Decoder {
-	return &Decoder{r: r}
+	return &Decoder{
+		r:               r,
+		attributePrefix: attrPrefix,
+		contentPrefix:   contentPrefix,
+	}
 }
 
 // Decode reads the next JSON-encoded value from its
 // input and stores it in the value pointed to by v.
 func (dec *Decoder) Decode(root *Node) error {
-
-	if dec.contentPrefix == "" {
-		dec.contentPrefix = contentPrefix
-	}
-	if dec.attributePrefix == "" {
-		dec.attributePrefix = attrPrefix
-	}
 
 	xmlDec := xml.NewDecoder(dec.r)
 

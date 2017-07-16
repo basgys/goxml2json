@@ -16,7 +16,11 @@ type Encoder struct {
 
 // NewEncoder returns a new encoder that writes to w.
 func NewEncoder(w io.Writer) *Encoder {
-	return &Encoder{w: w}
+	return &Encoder{
+		w:               w,
+		contentPrefix:   contentPrefix,
+		attributePrefix: attrPrefix,
+	}
 }
 
 func (enc *Encoder) SetAttributePrefix(prefix string) {
@@ -40,12 +44,6 @@ func (enc *Encoder) Encode(root *Node) error {
 	}
 	if root == nil {
 		return nil
-	}
-	if enc.contentPrefix == "" {
-		enc.contentPrefix = contentPrefix
-	}
-	if enc.attributePrefix == "" {
-		enc.attributePrefix = attrPrefix
 	}
 
 	enc.err = enc.format(root, 0)
