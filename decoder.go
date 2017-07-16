@@ -43,7 +43,11 @@ func (dec *Decoder) DecodeWithCustomPrefixes(root *Node, contentPrefix string, a
 
 // NewDecoder returns a new decoder that reads from r.
 func NewDecoder(r io.Reader) *Decoder {
-	return &Decoder{r: r}
+	return &Decoder{
+		r:               r,
+		attributePrefix: attrPrefix,
+		contentPrefix:   contentPrefix,
+	}
 }
 
 // Decode reads the next JSON-encoded value from its
