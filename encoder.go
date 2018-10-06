@@ -106,7 +106,6 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 
 		enc.write("}")
 	} else {
-		// TODO : Extract data type
 		enc.write(sanitiseString(n.Data))
 	}
 
@@ -122,7 +121,9 @@ var hex = "0123456789abcdef"
 
 func sanitiseString(s string) string {
 	var buf bytes.Buffer
-	if stringIsJavaScriptString(s) { // add opening quote if given string is a JS string
+	jsType := Str2JSType(s)
+	// prefix with quote if given string is a JS string
+	if jsType == String {
 		buf.WriteByte('"')
 	}
 	start := 0
@@ -193,46 +194,9 @@ func sanitiseString(s string) string {
 	if start < len(s) {
 		buf.WriteString(s[start:])
 	}
-	if stringIsJavaScriptString(s) { // add closing quote if given string is a JS string
+	// add closing quote if given string is a JS string
+	if jsType == String {
 		buf.WriteByte('"')
 	}
 	return buf.String()
-}
-
-// https://cswr.github.io/JsonSchema/spec/basic_types/
-func stringIsJavaScriptString(s string) bool {
-	// no check for 'null' js type because it shouldn't be possible in the context of this library
-	if stringIsNumber(s) || stringIsFloat(s) || stringIsBool(s) {
-		return false
-	}
-	return true
-}
-
-func stringIsNumber(s string) bool {
-	if len(s) > 1 {
-		// if the first rune is '0' and there is more than 1 rune, then this is likely a float or intended to be
-		// a string
-		if s[0] == '0' {
-			return false
-		}
-		_, err := strconv.Atoi(s)
-		if err == nil { // the string successfully converts to an int
-			return true
-		}
-	}
-	return false
-}
-
-func stringIsFloat(s string) bool {
-	if strings.Contains(s, ".") {
-		_, err := strconv.ParseFloat(s, 64)
-		if err == nil { // the string successfully converts to a decimal
-			return true
-		}
-	}
-	return false
-}
-
-func stringIsBool(s string) bool {
-	return s == "true" || s == "false"
 }

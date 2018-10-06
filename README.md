@@ -53,13 +53,13 @@ Go package that converts XML to JSON
 ```json
   {
     "osm": {
-      "-version": "0.6",
+      "-version": 0.6,
       "-generator": "CGImap 0.0.2",
       "bounds": {
-        "-minlat": "54.0889580",
-        "-minlon": "12.2487570",
-        "-maxlat": "54.0913900",
-        "-maxlon": "12.2524800"
+        "-minlat": 54.0889580,
+        "-minlon": 12.2487570,
+        "-maxlat": 54.0913900,
+        "-maxlon": 12.2524800
       },
       "foo": "bar"
     }
