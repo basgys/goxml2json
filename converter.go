@@ -6,7 +6,7 @@ import (
 )
 
 // Convert converts the given XML document to JSON
-func Convert(r io.Reader) (*bytes.Buffer, error) {
+func Convert(r io.Reader, ps ...encoderPlugin) (*bytes.Buffer, error) {
 	// Decode XML document
 	root := &Node{}
 	err := NewDecoder(r).Decode(root)
@@ -16,7 +16,11 @@ func Convert(r io.Reader) (*bytes.Buffer, error) {
 
 	// Then encode it in JSON
 	buf := new(bytes.Buffer)
-	err = NewEncoder(buf).Encode(root)
+	e := NewEncoder(buf)
+	for _, p := range ps {
+		e = p.AddTo(e)
+	}
+	err = e.Encode(root)
 	if err != nil {
 		return nil, err
 	}

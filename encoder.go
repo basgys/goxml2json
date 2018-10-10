@@ -12,11 +12,16 @@ type Encoder struct {
 	err             error
 	contentPrefix   string
 	attributePrefix string
+	s               *customSanitizer
 }
 
 // NewEncoder returns a new encoder that writes to w.
-func NewEncoder(w io.Writer) *Encoder {
-	return &Encoder{w: w}
+func NewEncoder(w io.Writer, plugins ...encoderPlugin) *Encoder {
+	e := &Encoder{w: w}
+	for _, p := range plugins {
+		e = p.AddTo(e)
+	}
+	return e
 }
 
 func (enc *Encoder) SetAttributePrefix(prefix string) {
@@ -106,7 +111,11 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 
 		enc.write("}")
 	} else {
-		enc.write(sanitiseString(n.Data))
+		if enc.s == nil {
+			enc.write(sanitiseString(n.Data))
+		} else {
+			enc.write(enc.s.Sanitize(n.Data))
+		}
 	}
 
 	return nil
@@ -121,11 +130,9 @@ var hex = "0123456789abcdef"
 
 func sanitiseString(s string) string {
 	var buf bytes.Buffer
-	jsType := Str2JSType(s)
-	// prefix with quote if given string is a JS string
-	if jsType == String {
-		buf.WriteByte('"')
-	}
+
+	buf.WriteByte('"')
+
 	start := 0
 	for i := 0; i < len(s); {
 		if b := s[i]; b < utf8.RuneSelf {
@@ -194,9 +201,8 @@ func sanitiseString(s string) string {
 	if start < len(s) {
 		buf.WriteString(s[start:])
 	}
-	// add closing quote if given string is a JS string
-	if jsType == String {
-		buf.WriteByte('"')
-	}
+
+	buf.WriteByte('"')
+
 	return buf.String()
 }
