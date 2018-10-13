@@ -1,8 +1,7 @@
 package xml2json
 
 import (
-	"bytes"
-	"unicode/utf8"
+	"strings"
 )
 
 type (
@@ -10,117 +9,71 @@ type (
 	encoderPlugin interface {
 		AddTo(*Encoder) *Encoder
 	}
-	// a sanitizer overides the default string sanitization for encoding json
-	encoderSanitizer interface {
-		Sanitize(string) string
+	// a Sanitiser overides the default string sanitization for encoding json
+	encoderTypeConverter interface {
+		Convert(string) string
 	}
-	// CustomSanitizer santizes JSON using a best guess approach, used for converting all data to appropriate types
-	customSanitizer struct {
+	// customTypeConverter santizes JSON using a best guess approach, used for converting all data to appropriate types
+	customTypeConverter struct {
 		parseTypes []JSType
 	}
+
+	attrPrefixer    string
+	contentPrefixer string
 )
 
-// NewCustomSanitizer allows customized parsing behavior by passing in the desired JSTypes
-func NewCustomSanitizer(ts ...JSType) *customSanitizer {
-	return &customSanitizer{parseTypes: ts}
+// WithTypeConverter allows customized js type conversion behavior by passing in the desired JSTypes
+func WithTypeConverter(ts ...JSType) *customTypeConverter {
+	return &customTypeConverter{parseTypes: ts}
 }
 
-func (cs *customSanitizer) parseAsString(t JSType) bool {
+func (tc *customTypeConverter) parseAsString(t JSType) bool {
 	if t == String {
 		return true
 	}
-	for i := 0; i < len(cs.parseTypes); i++ {
-		if cs.parseTypes[i] == t {
+	for i := 0; i < len(tc.parseTypes); i++ {
+		if tc.parseTypes[i] == t {
 			return false
 		}
 	}
 	return true
 }
 
-func (cs *customSanitizer) AddTo(e *Encoder) *Encoder {
-	e.s = cs
+// Adds the type converter to the encoder
+func (tc *customTypeConverter) AddTo(e *Encoder) *Encoder {
+	e.tc = tc
 	return e
 }
 
-func (cs *customSanitizer) Sanitize(s string) string {
-	var buf bytes.Buffer
-	// prefix output according to santizer settings
+func (tc *customTypeConverter) Convert(s string) string {
+	// remove quotes if they exists
+	if strings.HasPrefix(s, `"`) && strings.HasSuffix(s, `"`) {
+		s = s[1 : len(s)-1]
+	}
 	jsType := Str2JSType(s)
-	if cs.parseAsString(jsType) {
-		buf.WriteByte('"')
+	if tc.parseAsString(jsType) {
+		// add the quotes removed at the start of this func
+		s = `"` + s + `"`
 	}
+	return s
+}
 
-	start := 0
-	for i := 0; i < len(s); {
-		if b := s[i]; b < utf8.RuneSelf {
-			if 0x20 <= b && b != '\\' && b != '"' && b != '<' && b != '>' && b != '&' {
-				i++
-				continue
-			}
-			if start < i {
-				buf.WriteString(s[start:i])
-			}
-			switch b {
-			case '\\', '"':
-				buf.WriteByte('\\')
-				buf.WriteByte(b)
-			case '\n':
-				buf.WriteByte('\\')
-				buf.WriteByte('n')
-			case '\r':
-				buf.WriteByte('\\')
-				buf.WriteByte('r')
-			case '\t':
-				buf.WriteByte('\\')
-				buf.WriteByte('t')
-			default:
-				// This encodes bytes < 0x20 except for \n and \r,
-				// as well as <, > and &. The latter are escaped because they
-				// can lead to security holes when user-controlled strings
-				// are rendered into JSON and served to some browsers.
-				buf.WriteString(`\u00`)
-				buf.WriteByte(hex[b>>4])
-				buf.WriteByte(hex[b&0xF])
-			}
-			i++
-			start = i
-			continue
-		}
-		c, size := utf8.DecodeRuneInString(s[i:])
-		if c == utf8.RuneError && size == 1 {
-			if start < i {
-				buf.WriteString(s[start:i])
-			}
-			buf.WriteString(`\ufffd`)
-			i += size
-			start = i
-			continue
-		}
-		// U+2028 is LINE SEPARATOR.
-		// U+2029 is PARAGRAPH SEPARATOR.
-		// They are both technically valid characters in JSON strings,
-		// but don't work in JSONP, which has to be evaluated as JavaScript,
-		// and can lead to security holes there. It is valid JSON to
-		// escape them, so we do so unconditionally.
-		// See http://timelessrepo.com/json-isnt-a-javascript-subset for discussion.
-		if c == '\u2028' || c == '\u2029' {
-			if start < i {
-				buf.WriteString(s[start:i])
-			}
-			buf.WriteString(`\u202`)
-			buf.WriteByte(hex[c&0xF])
-			i += size
-			start = i
-			continue
-		}
-		i += size
-	}
-	if start < len(s) {
-		buf.WriteString(s[start:])
-	}
-	// suffix output according to sanitizer settings
-	if cs.parseAsString(jsType) {
-		buf.WriteByte('"')
-	}
-	return buf.String()
+// WithAttrPrefix appends the given prefix to the json output of xml attribute fields to preserve namespaces
+func WithAttrPrefix(prefix string) *attrPrefixer {
+	ap := attrPrefixer(prefix)
+	return &ap
+}
+
+func (a *attrPrefixer) AddTo(e *Encoder) {
+	e.attributePrefix = string((*a))
+}
+
+// WithContentPrefix appends the given prefix to the json output of xml content fields to preserve namespaces
+func WithContentPrefix(prefix string) *contentPrefixer {
+	c := contentPrefixer(prefix)
+	return &c
+}
+
+func (c *contentPrefixer) AddTo(e *Encoder) {
+	e.contentPrefix = string((*c))
 }

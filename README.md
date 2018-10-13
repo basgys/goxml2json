@@ -81,8 +81,7 @@ Go package that converts XML to JSON
   func main() {
   	// xml is an io.Reader
     xml := strings.NewReader(`<?xml version="1.0" encoding="UTF-8"?><price>19.95</price>`)
-    sanitizeFloats := xj.NewCustomSanitizer(xj.Float)
-  	json, err := xj.Convert(xml, sanitizeFloats)
+  	json, err := xj.Convert(xml, xj.WithTypeConverter(xj.Float))
   	if err != nil {
   		panic("That's embarrassing...")
   	}

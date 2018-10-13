@@ -2,6 +2,7 @@ package xml2json
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"unicode/utf8"
 )
@@ -12,7 +13,7 @@ type Encoder struct {
 	err             error
 	contentPrefix   string
 	attributePrefix string
-	s               *customSanitizer
+	tc              encoderTypeConverter
 }
 
 // NewEncoder returns a new encoder that writes to w.
@@ -22,20 +23,6 @@ func NewEncoder(w io.Writer, plugins ...encoderPlugin) *Encoder {
 		e = p.AddTo(e)
 	}
 	return e
-}
-
-func (enc *Encoder) SetAttributePrefix(prefix string) {
-	enc.attributePrefix = prefix
-}
-
-func (enc *Encoder) SetContentPrefix(prefix string) {
-	enc.contentPrefix = prefix
-}
-
-func (enc *Encoder) EncodeWithCustomPrefixes(root *Node, contentPrefix string, attributePrefix string) error {
-	enc.contentPrefix = contentPrefix
-	enc.attributePrefix = attributePrefix
-	return enc.Encode(root)
 }
 
 // Encode writes the JSON encoding of v to the stream
@@ -111,11 +98,15 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 
 		enc.write("}")
 	} else {
-		if enc.s == nil {
-			enc.write(sanitiseString(n.Data))
+		s := sanitiseString(n.Data)
+		if enc.tc == nil {
+			// do nothing
 		} else {
-			enc.write(enc.s.Sanitize(n.Data))
+			fmt.Println(s)
+			s = enc.tc.Convert(s)
 		}
+		enc.write(s)
+
 	}
 
 	return nil

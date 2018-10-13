@@ -37,8 +37,7 @@ const (
 
 func TestAllJSTypeParsing(t *testing.T) {
 	xml := strings.NewReader(productString)
-	sanitizeAll := NewCustomSanitizer(Bool, Int, Float)
-	jsBuf, err := Convert(xml, sanitizeAll)
+	jsBuf, err := Convert(xml, WithTypeConverter(Bool, Int, Float))
 	assert.NoError(t, err, "could not parse test xml")
 	product := Product{}
 	err = json.Unmarshal(jsBuf.Bytes(), &product)
@@ -62,8 +61,7 @@ func TestStringParsing(t *testing.T) {
 
 func TestMixedParsing(t *testing.T) {
 	xml := strings.NewReader(productString)
-	sanitizeFloats := NewCustomSanitizer(Float)
-	jsBuf, err := Convert(xml, sanitizeFloats)
+	jsBuf, err := Convert(xml, WithTypeConverter(Float))
 	assert.NoError(t, err, "could not parse test xml")
 	product := MixedProduct{}
 	err = json.Unmarshal(jsBuf.Bytes(), &product)
