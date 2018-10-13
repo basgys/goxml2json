@@ -66,7 +66,7 @@ Go package that converts XML to JSON
   }
 ```
 
-**Custom JSON Parsing**
+**With type conversion**
 
 ```go
   package main
@@ -80,7 +80,7 @@ Go package that converts XML to JSON
 
   func main() {
   	// xml is an io.Reader
-    xml := strings.NewReader(`<?xml version="1.0" encoding="UTF-8"?><price>19.95</price>`)
+  	xml := strings.NewReader(`<?xml version="1.0" encoding="UTF-8"?><price>19.95</price>`)
   	json, err := xj.Convert(xml, xj.WithTypeConverter(xj.Float))
   	if err != nil {
   		panic("That's embarrassing...")
@@ -97,12 +97,11 @@ Feel free to contribute to this project if you want to fix/extend/improve it.
 ### Contributors
 
   - [DirectX](https://github.com/directx)
+  - [powerslacker](https://github.com/powerslacker)  
   - [samuelhug](https://github.com/samuelhug)
-  - [powerslacker](https://github.com/powerslacker)
 
 ### TODO
 
-   * Extract data types in JSON (numbers, boolean, ...)
    * Categorise errors
    * Option to prettify the JSON output
    * Benchmark
