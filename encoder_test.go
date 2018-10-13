@@ -69,10 +69,10 @@ func TestEncode(t *testing.T) {
 	err = enc.Encode(nil)
 	assert.NoError(err)
 
-	enc.SetAttributePrefix("test")
-	enc.SetContentPrefix("test2")
-	err = enc.EncodeWithCustomPrefixes(root, "test3", "test4")
-	assert.NoError(err)
+	attr := WithAttrPrefix("test")
+	attr.AddTo(enc)
+	content := WithContentPrefix("test2")
+	content.AddTo(enc)
 
 	err = enc.Encode(root)
 	assert.NoError(err)

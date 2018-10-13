@@ -2,6 +2,7 @@ package xml2json
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"unicode/utf8"
 )
@@ -12,25 +13,16 @@ type Encoder struct {
 	err             error
 	contentPrefix   string
 	attributePrefix string
+	tc              encoderTypeConverter
 }
 
 // NewEncoder returns a new encoder that writes to w.
-func NewEncoder(w io.Writer) *Encoder {
-	return &Encoder{w: w}
-}
-
-func (enc *Encoder) SetAttributePrefix(prefix string) {
-	enc.attributePrefix = prefix
-}
-
-func (enc *Encoder) SetContentPrefix(prefix string) {
-	enc.contentPrefix = prefix
-}
-
-func (enc *Encoder) EncodeWithCustomPrefixes(root *Node, contentPrefix string, attributePrefix string) error {
-	enc.contentPrefix = contentPrefix
-	enc.attributePrefix = attributePrefix
-	return enc.Encode(root)
+func NewEncoder(w io.Writer, plugins ...encoderPlugin) *Encoder {
+	e := &Encoder{w: w}
+	for _, p := range plugins {
+		e = p.AddTo(e)
+	}
+	return e
 }
 
 // Encode writes the JSON encoding of v to the stream
@@ -106,8 +98,15 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 
 		enc.write("}")
 	} else {
-		// TODO : Extract data type
-		enc.write(sanitiseString(n.Data))
+		s := sanitiseString(n.Data)
+		if enc.tc == nil {
+			// do nothing
+		} else {
+			fmt.Println(s)
+			s = enc.tc.Convert(s)
+		}
+		enc.write(s)
+
 	}
 
 	return nil
@@ -124,6 +123,7 @@ func sanitiseString(s string) string {
 	var buf bytes.Buffer
 
 	buf.WriteByte('"')
+
 	start := 0
 	for i := 0; i < len(s); {
 		if b := s[i]; b < utf8.RuneSelf {
@@ -192,6 +192,8 @@ func sanitiseString(s string) string {
 	if start < len(s) {
 		buf.WriteString(s[start:])
 	}
+
 	buf.WriteByte('"')
+
 	return buf.String()
 }
