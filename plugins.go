@@ -9,11 +9,12 @@ type (
 	encoderPlugin interface {
 		AddTo(*Encoder) *Encoder
 	}
-	// a Sanitiser overides the default string sanitization for encoding json
+	// a type converter overides the default string sanitization for encoding json
 	encoderTypeConverter interface {
 		Convert(string) string
 	}
-	// customTypeConverter santizes JSON using a best guess approach, used for converting all data to appropriate types
+	// customTypeConverter converts strings to JSON types using a best guess approach, only parses the JSON types given
+	// when initialized via WithTypeConverter
 	customTypeConverter struct {
 		parseTypes []JSType
 	}
