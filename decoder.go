@@ -15,10 +15,12 @@ const (
 
 // A Decoder reads and decodes XML objects from an input stream.
 type Decoder struct {
-	r               io.Reader
-	err             error
-	attributePrefix string
-	contentPrefix   string
+	r                      io.Reader
+	err                    error
+	attributePrefix        string
+	contentPrefix          string
+	turnOffDefaultPrefixes bool
+	excludeAttrs           map[string]bool
 }
 
 type element struct {
@@ -35,6 +37,16 @@ func (dec *Decoder) SetContentPrefix(prefix string) {
 	dec.contentPrefix = prefix
 }
 
+func (dec *Decoder) ExcludeAttributes(attrs []string) {
+	for _, attr := range attrs {
+		dec.excludeAttrs[attr] = true
+	}
+}
+
+func (dec *Decoder) TurnOffDefaultPrefixes() {
+	dec.turnOffDefaultPrefixes = true
+}
+
 func (dec *Decoder) DecodeWithCustomPrefixes(root *Node, contentPrefix string, attributePrefix string) error {
 	dec.contentPrefix = contentPrefix
 	dec.attributePrefix = attributePrefix
@@ -43,18 +55,20 @@ func (dec *Decoder) DecodeWithCustomPrefixes(root *Node, contentPrefix string, a
 
 // NewDecoder returns a new decoder that reads from r.
 func NewDecoder(r io.Reader) *Decoder {
-	return &Decoder{r: r}
+	return &Decoder{r: r, excludeAttrs: map[string]bool{}}
 }
 
 // Decode reads the next JSON-encoded value from its
 // input and stores it in the value pointed to by v.
 func (dec *Decoder) Decode(root *Node) error {
 
-	if dec.contentPrefix == "" {
-		dec.contentPrefix = contentPrefix
-	}
-	if dec.attributePrefix == "" {
-		dec.attributePrefix = attrPrefix
+	if !dec.turnOffDefaultPrefixes {
+		if dec.contentPrefix == "" {
+			dec.contentPrefix = contentPrefix
+		}
+		if dec.attributePrefix == "" {
+			dec.attributePrefix = attrPrefix
+		}
 	}
 
 	xmlDec := xml.NewDecoder(dec.r)
@@ -85,6 +99,9 @@ func (dec *Decoder) Decode(root *Node) error {
 
 			// Extract attributes as children
 			for _, a := range se.Attr {
+				if _, ok := dec.excludeAttrs[a.Name.Local]; ok {
+					continue
+				}
 				elem.n.AddChild(dec.attributePrefix+a.Name.Local, &Node{Data: a.Value})
 			}
 		case xml.CharData:

@@ -2,7 +2,6 @@ package xml2json
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"unicode/utf8"
 )
@@ -74,7 +73,7 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 			enc.write(label)
 			enc.write("\": ")
 
-			if len(children) > 1 {
+			if n.ChildrenAlwaysAsArray || len(children) > 1 {
 				// Array
 				enc.write("[")
 				for j, c := range children {
@@ -102,7 +101,6 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 		if enc.tc == nil {
 			// do nothing
 		} else {
-			fmt.Println(s)
 			s = enc.tc.Convert(s)
 		}
 		enc.write(s)
