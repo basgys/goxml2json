@@ -2,8 +2,9 @@ package xml2json
 
 // Node is a data element on a tree
 type Node struct {
-	Children map[string]Nodes
-	Data     string
+	Children              map[string]Nodes
+	Data                  string
+	ChildrenAlwaysAsArray bool
 }
 
 // Nodes is a list of nodes
