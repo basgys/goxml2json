@@ -2,7 +2,6 @@ package xml2json
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"unicode/utf8"
 )
@@ -102,7 +101,6 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 		if enc.tc == nil {
 			// do nothing
 		} else {
-			fmt.Println(s)
 			s = enc.tc.Convert(s)
 		}
 		enc.write(s)
