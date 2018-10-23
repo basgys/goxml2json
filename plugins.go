@@ -52,7 +52,9 @@ func (tc *customTypeConverter) Convert(s string) string {
 		s = s[1 : len(s)-1]
 	}
 	jsType := Str2JSType(s)
-	if tc.parseAsString(jsType) {
+	if jsType == Null {
+		s = "null"
+	} else if tc.parseAsString(jsType) {
 		// add the quotes removed at the start of this func
 		s = `"` + s + `"`
 	}
