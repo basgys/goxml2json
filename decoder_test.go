@@ -38,16 +38,14 @@ func TestDecode(t *testing.T) {
 
 }
 
-func TestDecodeWithoutDefaultsAndSomeAttributes(t *testing.T) {
+func TestDecodeWithoutDefaultsAndExcludeAttributes(t *testing.T) {
 	assert := assert.New(t)
 
 	// Decode XML document
 	root := &Node{}
 	var err error
 	var dec *Decoder
-	dec = NewDecoder(strings.NewReader(s))
-	dec.TurnOffDefaultPrefixes()
-	dec.ExcludeAttributes([]string{"version", "generator"})
+	dec = NewDecoder(strings.NewReader(s), WithAttrPrefix(""), ExcludeAttributes([]string{"version", "generator"}))
 	err = dec.Decode(root)
 	assert.NoError(err)
 

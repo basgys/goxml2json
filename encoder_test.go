@@ -71,9 +71,9 @@ func TestEncode(t *testing.T) {
 	assert.NoError(err)
 
 	attr := WithAttrPrefix("test")
-	attr.AddTo(enc)
+	attr.AddToEncoder(enc)
 	content := WithContentPrefix("test2")
-	content.AddTo(enc)
+	content.AddToEncoder(enc)
 
 	err = enc.Encode(root)
 	assert.NoError(err)
