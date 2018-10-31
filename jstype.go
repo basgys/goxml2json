@@ -14,6 +14,7 @@ const (
 	Int
 	Float
 	String
+	Null
 )
 
 // Str2JSType extract a JavaScript type from a string
@@ -29,6 +30,8 @@ func Str2JSType(s string) JSType {
 		output = Float
 	case isInt(s):
 		output = Int
+	case isNull(s):
+		output = Null
 	default:
 		output = String // if all alternatives have been eliminated, the input is a string
 	}
@@ -64,4 +67,13 @@ func isInt(s string) bool {
 		}
 	}
 	return output
+}
+
+func isNull(s string) bool {
+	switch strings.ToLower(s) {
+		case "", "null", "nil" :
+			return true
+		default :
+			return false
+	}
 }
