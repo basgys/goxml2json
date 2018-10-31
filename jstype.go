@@ -52,10 +52,10 @@ func isFloat(s string) bool {
 
 func isInt(s string) bool {
 	var output = false
-	if len(s) > 1 {
+	if len(s) >= 1 {
 		_, err := strconv.Atoi(s)
 		if err == nil { // the string successfully converts to an int
-			if s[0] == '0' {
+			if s != "0" && s[0] == '0' {
 				// if the first rune is '0' and there is more than 1 rune, then the input is most likely a float or intended to be
 				// a string value -- such as in the case of a guid, or an international phone number
 			} else {
