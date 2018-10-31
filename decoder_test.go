@@ -7,11 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestDecode ensures that decode does not return any errors (not that useful)
-func TestDecode(t *testing.T) {
-	assert := assert.New(t)
-
-	s := `<?xml version="1.0" encoding="UTF-8"?>
+var s = `<?xml version="1.0" encoding="UTF-8"?>
   <osm version="0.6" generator="CGImap 0.0.2">
    <bounds minlat="54.0889580" minlon="12.2487570" maxlat="54.0913900" maxlon="12.2524800"/>
    <node id="298884269" lat="54.0901746" lon="12.2482632" user="SvenHRO" uid="46882" visible="true" version="1" changeset="676636" timestamp="2008-09-21T21:37:45Z"/>
@@ -22,6 +18,10 @@ func TestDecode(t *testing.T) {
    </node>
    <foo>bar</foo>
   </osm>`
+
+// TestDecode ensures that decode does not return any errors (not that useful)
+func TestDecode(t *testing.T) {
+	assert := assert.New(t)
 
 	// Decode XML document
 	root := &Node{}
@@ -36,6 +36,26 @@ func TestDecode(t *testing.T) {
 	err = dec.DecodeWithCustomPrefixes(root, "test3", "test4")
 	assert.NoError(err)
 
+}
+
+func TestDecodeWithoutDefaultsAndExcludeAttributes(t *testing.T) {
+	assert := assert.New(t)
+
+	// Decode XML document
+	root := &Node{}
+	var err error
+	var dec *Decoder
+	dec = NewDecoder(strings.NewReader(s), WithAttrPrefix(""), ExcludeAttributes([]string{"version", "generator"}))
+	err = dec.Decode(root)
+	assert.NoError(err)
+
+	// Check that some attribute`s name has no prefix and has expected value
+	assert.Exactly(root.Children["osm"][0].Children["bounds"][0].Children["minlat"][0].Data, "54.0889580")
+	// Check that some attributes are not present
+	_, exists := root.Children["osm"][0].Children["version"]
+	assert.False(exists)
+	_, exists = root.Children["osm"][0].Children["generator"]
+	assert.False(exists)
 }
 
 func TestTrim(t *testing.T) {

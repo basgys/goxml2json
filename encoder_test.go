@@ -2,6 +2,7 @@ package xml2json
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -70,9 +71,9 @@ func TestEncode(t *testing.T) {
 	assert.NoError(err)
 
 	attr := WithAttrPrefix("test")
-	attr.AddTo(enc)
+	attr.AddToEncoder(enc)
 	content := WithContentPrefix("test2")
-	content.AddTo(enc)
+	content.AddToEncoder(enc)
 
 	err = enc.Encode(root)
 	assert.NoError(err)
@@ -98,4 +99,52 @@ func TestEncode(t *testing.T) {
 
 	enc.err = fmt.Errorf("Testing if error provided is returned")
 	assert.Error(enc.Encode(nil))
+}
+
+// TestEncodeWithChildrenAsExplicitArray ensures that ChildrenAlwaysAsArray flag works as expected.
+func TestEncodeWithChildrenAsExplicitArray(t *testing.T) {
+	type hobbies struct {
+		Hobbies []string `json:"hobbies"`
+	}
+
+	var (
+		testBio hobbies
+		err     error
+	)
+	assert := assert.New(t)
+
+	author := bio{
+		Hobbies: []string{"DJ"},
+	}
+
+	// ChildrenAlwaysAsArray is not set
+	root := &Node{}
+	for _, h := range author.Hobbies {
+		root.AddChild("hobbies", &Node{
+			Data: h,
+		})
+	}
+	var enc *Encoder
+
+	buf := new(bytes.Buffer)
+	enc = NewEncoder(buf)
+
+	err = enc.Encode(root)
+	assert.NoError(err)
+
+	json.Unmarshal(buf.Bytes(), &testBio)
+	assert.Equal(0, len(testBio.Hobbies))
+
+	// ChildrenAlwaysAsArray is set
+	root.ChildrenAlwaysAsArray = true
+	testBio = hobbies{}
+
+	buf = new(bytes.Buffer)
+	enc = NewEncoder(buf)
+
+	err = enc.Encode(root)
+	assert.NoError(err)
+
+	json.Unmarshal(buf.Bytes(), &testBio)
+	assert.Equal(1, len(testBio.Hobbies))
 }

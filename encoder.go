@@ -16,10 +16,10 @@ type Encoder struct {
 }
 
 // NewEncoder returns a new encoder that writes to w.
-func NewEncoder(w io.Writer, plugins ...encoderPlugin) *Encoder {
-	e := &Encoder{w: w}
+func NewEncoder(w io.Writer, plugins ...plugin) *Encoder {
+	e := &Encoder{w: w, contentPrefix: contentPrefix, attributePrefix: attrPrefix}
 	for _, p := range plugins {
-		e = p.AddTo(e)
+		e = p.AddToEncoder(e)
 	}
 	return e
 }
@@ -31,12 +31,6 @@ func (enc *Encoder) Encode(root *Node) error {
 	}
 	if root == nil {
 		return nil
-	}
-	if enc.contentPrefix == "" {
-		enc.contentPrefix = contentPrefix
-	}
-	if enc.attributePrefix == "" {
-		enc.attributePrefix = attrPrefix
 	}
 
 	enc.err = enc.format(root, 0)
@@ -73,7 +67,7 @@ func (enc *Encoder) format(n *Node, lvl int) error {
 			enc.write(label)
 			enc.write("\": ")
 
-			if len(children) > 1 {
+			if n.ChildrenAlwaysAsArray || len(children) > 1 {
 				// Array
 				enc.write("[")
 				for j, c := range children {
