@@ -45,3 +45,31 @@ func (n *Node) GetChild(path string) *Node {
 	}
 	return result
 }
+
+// GetChildren returns a slice of Children for a given path
+func (n *Node) GetChildren(path string) []*Node {
+	pathtok := strings.Split(path, ".")
+	return n.getChildren(pathtok)
+}
+
+func (n *Node) getChildren(pt []string) []*Node {
+	var result []*Node
+	name := pt[0]
+
+	children, exists := n.Children[name]
+	if !exists {
+		return nil
+	}
+	if len(children) == 0 {
+		return nil
+	}
+	if len(pt) > 1 {
+		for _, child := range children {
+			result = append(result, child.getChildren(pt[1:])...)
+		}
+	} else {
+		result = append(result, children...)
+	}
+
+	return result
+}
