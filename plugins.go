@@ -146,9 +146,11 @@ func NodePlugin(path string, plugin nodePlugin) nodeFormatter {
 }
 
 func (nf *nodeFormatter) Format(node *Node) {
-	child := node.GetChild(nf.path)
-	if child != nil {
-		nf.plugin.AddTo(child)
+	children := node.GetChildren(nf.path)
+	if children != nil {
+		for _, child := range children {
+			nf.plugin.AddTo(child)
+		}
 	}
 }
 
