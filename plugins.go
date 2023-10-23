@@ -159,3 +159,19 @@ func ToArray() *arrayFormatter {
 func (af *arrayFormatter) AddTo(n *Node) {
 	n.ChildrenAlwaysAsArray = true
 }
+
+
+//Formatting nodes
+type NodeFormat struct {
+	Path string
+	Plugin nodePlugin
+}
+
+//making list of node formatter
+func FormatNodes(nfs []NodeFormat) *nodesFormatter {
+	var nsf []nodeFormatter
+	for _, nf := range nfs {
+		nsf = append(nsf, nodeFormatter{path: nf.Path, plugin: nf.Plugin})
+	}
+	return WithNodes(nsf...)
+}
